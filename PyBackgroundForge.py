@@ -187,14 +187,13 @@ def loop(obj):
   delay(500)
   obj.press('numpad_0')
   delay(1000)
-  obj.press('q')
-  delay(40000)
-  obj.press('e')
-  delay(33000)
+  executeMacro(obj, 'q', 36, 3)
+  executeMacro(obj, 'e', 29, 3) 
 
-ffxiv = Pyckground('最终幻想XIV')
-ffxiv.setLoop(loop)
-ffxiv.run()
+
+ffxivforge = Pyckground('最终幻想XIV')
+ffxivforge.setLoop(loop)
+ffxivforge.run()
 
 
 
