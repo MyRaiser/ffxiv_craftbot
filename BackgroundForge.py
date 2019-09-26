@@ -1,7 +1,9 @@
 import win32api
 import win32gui
 import win32con
+import datetime
 import time
+
 VK_CODE = {
   'backspace':0x08,
   'tab':0x09,
@@ -150,50 +152,43 @@ VK_CODE = {
   "'":0xDE,
   '`': 0xC0}
   
-def GethWnd(AppName):
+def gethWnd(AppName):
   hWnd = win32gui.FindWindow(None, AppName)
-  print("hWnd is:", hWnd)
+  report("hWnd is:", hWnd)
   return hWnd
 
 def delay(ms):
   time.sleep(ms / 1000)
-
-class Pyckground:
+  
+def presentTime():
+  return datetime.datetime.now().strftime('%H:%M:%S.%f')
+  
+def report(*x):
+  print("[", presentTime(), "]", *x)
+  
+class BackgroundForge:
   def __init__(self,AppName):
-    self.hWnd = GethWnd(AppName)
+    self.hWnd = gethWnd(AppName)
+    #self.VK_CODE = VK_CODE
+    
+  def press(self, key, pressTime=5):
+    win32gui.SendMessage(self.hWnd, win32con.WM_KEYDOWN, VK_CODE[key], 0)
+    delay(pressTime)
+    win32gui.SendMessage(self.hWnd, win32con.WM_KEYUP, VK_CODE[key], 0)
+    report(key,"is pressed!")
 
-  def press(self,key):
-    win32gui.PostMessage(self.hWnd, win32con.WM_KEYDOWN, VK_CODE[key], 0)
-    win32gui.PostMessage(self.hWnd, win32con.WM_KEYUP, VK_CODE[key], 0)
+  def setAction(self, action):
+    self.action = action
 
-  def setLoop(self,loop):
-    self.loop = loop
-
-  def run(self):
-    while (1):
-      self.loop(self)
+  def run(self, times):
+    for i in range(times):
+      self.action(self)
 
 #unit of macroLength: seconds
 def executeMacro(obj,macroButton, macroLength,delay_sec):
   obj.press(macroButton)
   delay((macroLength + delay_sec) * 1000)
-  
-def loop(obj):
-  obj.press('numpad_0')
-  delay(500)
-  obj.press('numpad_0')
-  delay(500)
-  obj.press('numpad_0')
-  delay(500)
-  obj.press('numpad_0')
-  delay(1000)
-  executeMacro(obj, 'q', 36, 3)
-  executeMacro(obj, 'e', 29, 3) 
 
-
-ffxivforge = Pyckground('最终幻想XIV')
-ffxivforge.setLoop(loop)
-ffxivforge.run()
 
 
 
