@@ -160,9 +160,9 @@ def gethWnd(AppName):
 
 def delay(ms, approximity=0.05):
   '''
-  default delay ms*(1±5%)
+  default delay:[1~(1+approximity)]*ms
   '''
-  time.sleep((ms + randint(-ms * approximity, ms * approximity)) / 1000)
+  time.sleep((ms + randint(0, int(ms * approximity)) / 1000)
   
   
 def presentTime():
