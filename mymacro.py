@@ -30,5 +30,5 @@ while(1):
     delay(36000)
     x.press('e')
     delay(9000)
-    delay(1000)
+    delay(3000)
 

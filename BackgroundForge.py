@@ -3,6 +3,7 @@ import win32gui
 import win32con
 import datetime
 import time
+from random import randint
 
 VK_CODE = {
   'backspace':0x08,
@@ -157,8 +158,12 @@ def gethWnd(AppName):
   report("hWnd is:", hWnd)
   return hWnd
 
-def delay(ms):
-  time.sleep(ms / 1000)
+def delay(ms, approximity=0.05):
+  '''
+  default delay ms*(1±5%)
+  '''
+  time.sleep((ms + randint(-ms * approximity, ms * approximity)) / 1000)
+  
   
 def presentTime():
   return datetime.datetime.now().strftime('%H:%M:%S.%f')
