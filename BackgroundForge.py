@@ -162,9 +162,8 @@ def delay(ms, approximity=0.05):
   '''
   default delay:[1~(1+approximity)]*ms
   '''
-  time.sleep((ms + randint(0, int(ms * approximity)) / 1000)
-  
-  
+  time.sleep((ms + randint(0, int(ms * approximity))) / 1000)
+
 def presentTime():
   return datetime.datetime.now().strftime('%H:%M:%S.%f')
   

@@ -26,7 +26,9 @@ while(1):
     delay(1000)
     x.press('`')
     delay(100)
+    x.press('q')
+    delay(36000)
     x.press('e')
-    delay(10000)
+    delay(9000)
     delay(3000)
 
