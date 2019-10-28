@@ -4,6 +4,7 @@ import win32con
 import datetime
 import time
 from random import randint
+import re
 
 VK_CODE = {
   'backspace':0x08,
@@ -78,7 +79,7 @@ VK_CODE = {
   'numpad_7':0x67,
   'numpad_8':0x68,
   'numpad_9':0x69,
-  'multiply_key':0x6A,
+  'numpad_*':0x6A,
   'add_key':0x6B,
   'separator_key':0x6C,
   'subtract_key':0x6D,
@@ -188,11 +189,35 @@ class BackgroundForge:
     for i in range(times):
       self.action(self)
 
+def calculateMacroLength(macro):
+  '''
+  macro="""/ac 稳手II <wait.2>
+  /ac 坯料加工 <wait.3>
+  /ac 坯料加工 <wait.3>
+  /ac 坯料加工 <wait.3>
+  /ac 回收 <wait.2>
+  /ac 再利用
+  /ac 坯料加工
+  /wait 3
+  /ac 模范制作III <wait.3> """
+  '''
+  pattern = "[1-9]"
+  result = re.findall(pattern, macro, flags=0)
+  time = sum([int(x) for x in result])
+  report("Macro length:",time,"sec")
+  return time
+
 #unit of macroLength: seconds
 def executeMacro(obj,macroButton, macroLength,delay_sec):
   obj.press(macroButton)
   delay((macroLength + delay_sec) * 1000)
 
-
-
-
+def leftClick(x, y, pressTime=50):
+  x = round(x)
+  y = round(y)
+  
+  win32api.SetCursorPos((x, y))
+  win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
+  delay(pressTime)
+  win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, x, y, 0, 0)
+  report("mouse left clicked at", x, y)

@@ -14,7 +14,7 @@ def loop(obj):
     executeMacro(obj, 'e', 29, 3)
 '''
 
-x = BackgroundForge("最终幻想XIV")
+x = BackgroundForge("????XIV")
 while(1):
     x.press('numpad_0')
     delay(200)
