@@ -1,32 +1,19 @@
-from BackgroundForge import *
+from ffxiv_craftbot import Macro, Craftbot
 
-'''
-def loop(obj):
-    obj.press('numpad_0')
-    delay(500)
-    obj.press('numpad_0')
-    delay(500)
-    obj.press('numpad_0')
-    delay(500)
-    obj.press('numpad_0')
-    delay(1000)
-    executeMacro(obj, 'q', 36, 3)
-    executeMacro(obj, 'e', 29, 3)
-'''
+macro1_content =\
+"""
+/ac 闲静 <wait.3>
+/ac 掌握 <wait.2>
+/ac 改革 <wait.2>
+/ac 精密制作 <wait.3>
+/ac 精密制作 <wait.3>
+/ac 阔步 <wait.2>
+/ac 比尔格的祝福 <wait.3>
+/ac 精密制作 <wait.3>
+"""
+macro1 = Macro(macro1_content, '4')
 
-x = BackgroundForge("????XIV")
-while(1):
-    x.press('numpad_0')
-    delay(200)
-    x.press('numpad_0')
-    delay(200)
-    x.press('numpad_0')
-    delay(200)
-    x.press('numpad_0')
-    delay(1000)
-    x.press('`')
-    delay(100)
-    x.press('e')
-    delay(10000)
-    delay(3000)
+ffxiv = Craftbot('最终幻想XIV')
+ffxiv.forge(macro1, rst_macro_key='`', is_collection=True)
+
 
