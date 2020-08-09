@@ -5,7 +5,7 @@ import datetime
 import time
 from random import randint
 import re
-
+import ctypes, sys, os
 VK_CODE = {
   'backspace':0x08,
   'tab':0x09,
@@ -154,6 +154,8 @@ VK_CODE = {
   "'":0xDE,
   '`': 0xC0}
 
+
+
 class Macro:
     '''
     generate a macro object used in `Craftbot.forge()`. Time will be calculated automatically.
@@ -187,17 +189,22 @@ class Craftbot:
         ffxiv = Craftbot('最终幻想XIV')
         ```
     '''
+
     @staticmethod
     def get_hWnd(AppName):
         hWnd = win32gui.FindWindow(None, AppName)
         report("hWnd is:", hWnd)
         return hWnd
-
-    def __init__(self,window_title):
-        self.hWnd = Craftbot.get_hWnd(window_title)
-        if self.hWnd == 0:
-            raise ValueError("hWnd is zero!")
-            #self.VK_CODE = VK_CODE
+        
+    def __init__(self, window_title):
+        # get admin
+        if is_admin():
+            self.hWnd = Craftbot.get_hWnd(window_title)
+            if self.hWnd == 0:
+                raise ValueError("hWnd is zero!")
+                #self.VK_CODE = VK_CODE
+        else:
+            raise ValueError("No admin permission!")
     
     def press(self, key, time=5):
         win32gui.SendMessage(self.hWnd, win32con.WM_KEYDOWN, VK_CODE[key], 0)
@@ -270,19 +277,16 @@ def present_time():
 def report(*x):
     print("[", present_time(), "]", *x)
 
-
-
-    
-
-
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
 
 #unit of macroLength: seconds
 def execute_macro(obj,macroButton, macroLength,delay_sec):
     obj.press(macroButton)
     delay((macroLength + delay_sec) * 1000)
-
-
-
 
 def leftClick(x, y, pressTime=50):
     x = round(x)
