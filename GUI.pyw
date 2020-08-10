@@ -1,7 +1,9 @@
 import tkinter as tk
 from ffxiv_craftbot import Macro, Craftbot
+from ffxiv_craftbot import is_admin
 import threading
 import json
+import tkinter.messagebox as msgbox
 
 
 def exec_macro():
@@ -9,27 +11,28 @@ def exec_macro():
     macro1_content = text_macro_content.get('0.0', 'end')
     macro1_key = var_macro_key.get()
     macro1 = Macro(macro1_content, macro1_key)
-
+    is_collection = var_is_collection.get()
+    rst_macro_key = var_rst_macro_key.get()
+    iteration = var_iteration.get()
     # auto-save macro content
-    with open("macro1.craftbot", 'w', encoding='utf-8') as f:
-        macro1_to_save = {
+    with open("macro_autosaved.craftbot", 'w', encoding='utf-8') as f:
+        macro_autosaved = {
             "macro": macro1.macro,
             "key": macro1.key,
-            "time": macro1.time
+            "time": macro1.time,
+            "rst_macro_key": rst_macro_key,
+            "is_collection": is_collection
         }
-        json.dump(macro1_to_save, f, indent=4)
-        print("macro1 Auto-saved.")
+        json.dump(macro_autosaved, f, indent=4, ensure_ascii=False)
+        print("[macro Auto-saved.]")
 
-    rst_macro_key = var_rst_macro_key.get()
     if rst_macro_key == '':
         rst_macro_key = None
-
-    iteration = var_iteration.get()
 
     ffxiv = Craftbot('最终幻想XIV')
     for i in range(iteration):
         ffxiv.forge(macro1, rst_macro_key=rst_macro_key,
-                    is_collection=var_is_collection.get())
+                    is_collection=is_collection)
 
 
 def thread_it(func, *args):
@@ -44,12 +47,18 @@ def thread_it(func, *args):
     # t.join()
 
 
+print("Starting GUI...")
 root = tk.Tk()
 root.title("FFXIV Craft Bot")
+try:
+    root.iconbitmap("ffxiv_craftbot.ico")
+except:
+    print("[fail to set icon.]")
 
-label_macro_content = tk.Label(root, text="宏内容").pack()
+label_macro_content = tk.Label(root, text="宏时长（或粘贴宏内容自动计算）").pack()
 text_macro_content = tk.Text(root)
 text_macro_content.pack()
+
 
 var_macro_key = tk.StringVar()
 label_macro_key = tk.Label(root, text="宏快捷键").pack()
@@ -71,5 +80,20 @@ checkbutton_is_collection = tk.Checkbutton(
 button_exec = tk.Button(
     root, text="执行", command=lambda: thread_it(exec_macro)).pack()
 
+if not is_admin():
+    msgbox.showinfo(
+        title="Error", message="No Admin permision!\n Craftbot will not run.")
+
+# initialize macro last used
+try:
+    with open("macro_autosaved.craftbot", 'r', encoding='utf-8') as f:
+        macro_autosaved = json.load(f)
+        print(macro_autosaved)
+        text_macro_content.insert('end', macro_autosaved["macro"])
+        var_macro_key.set(macro_autosaved["key"])
+        var_rst_macro_key.set(macro_autosaved["rst_macro_key"])
+        var_is_collection.set(macro_autosaved["is_collection"])
+except:
+    print("[failed to open macro_autosaved.craftbot.]")
 
 root.mainloop()
