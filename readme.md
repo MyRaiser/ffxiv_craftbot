@@ -3,6 +3,9 @@
 
 Do crafting automatically, support normal crafting, multiple macros crafting, collection crafting.
 
+- **ATTENTION**
+    **DO NOT** do crafting when you're AFK. Please stay in front of your PC and monitor when running. This tool is only to free your hand from boring work. This tool **DOES NOT** ensure proper action of character in game.
+
 Start with:
 
 ```py
@@ -48,7 +51,24 @@ macro1 = Macro(macro1_content, '4')
 
 ffxiv = Craftbot('最终幻想XIV')
 ffxiv.forge(macro1, rst_macro_key='`', is_collection=True)
-
-
-
 ```
+
+## Execute
+
+### Command Line
+1. Write your script. (e.g. filename is `mymacro.py`)
+
+2. Choose target recipe in crafting page. Ensure your macro is in correct key.
+
+3. Open Powershell(with Admin permission) and run:
+    ```bash
+    python mymacro.py
+    ```
+
+### GUI
+run:
+```bash
+python GUI.pyw
+```
+
+or you can use Pyinstaller to pack it and run `GUI.exe`
