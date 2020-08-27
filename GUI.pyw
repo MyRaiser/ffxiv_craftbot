@@ -5,6 +5,8 @@ import threading
 import json
 import tkinter.messagebox as msgbox
 
+_subprocess_exec_macro = None
+
 
 def exec_macro():
     # get all content from text.
@@ -33,6 +35,11 @@ def exec_macro():
     for i in range(iteration):
         ffxiv.forge(macro1, rst_macro_key=rst_macro_key,
                     is_collection=is_collection)
+
+
+# Python的多线程\进程真是充满了坑
+# multiprocessing在windows下只能在__main__里跑！
+# threading又没有提供kill方法！！
 
 
 def thread_it(func, *args):
@@ -78,7 +85,10 @@ checkbutton_is_collection = tk.Checkbutton(
     root, text="收藏品", variable=var_is_collection, onvalue=True, offvalue=False).pack()
 
 button_exec = tk.Button(
-    root, text="执行", command=lambda: thread_it(exec_macro)).pack()
+    root, text="执行", command=start_subprocess_exec_macro()).pack()
+
+button_stop = tk.Button(
+    root, text="中止", command=kill_subprocess_exec_macro()).pack()
 
 if not is_admin():
     msgbox.showinfo(

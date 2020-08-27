@@ -196,6 +196,7 @@ class Craftbot:
     def get_hWnd(AppName):
         hWnd = win32gui.FindWindow(None, AppName)
         report("hWnd is:", hWnd)
+        self.enable = True
         return hWnd
 
     def __init__(self, window_title):
@@ -209,10 +210,15 @@ class Craftbot:
             raise ValueError("No admin permission!")
 
     def press(self, key, time=5):
-        win32gui.SendMessage(self.hWnd, win32con.WM_KEYDOWN, VK_CODE[key], 0)
-        delay(time)
-        win32gui.SendMessage(self.hWnd, win32con.WM_KEYUP, VK_CODE[key], 0)
-        report(key, "is pressed!")
+        if self.enable == True:
+            win32gui.SendMessage(
+                self.hWnd, win32con.WM_KEYDOWN, VK_CODE[key], 0)
+            delay(time)
+            win32gui.SendMessage(self.hWnd, win32con.WM_KEYUP, VK_CODE[key], 0)
+            report(key, "is pressed!")
+
+    def delay(self, ms, approximity=0.05):
+        delay(ms, approximity)  # call delay() outside class
 
     def set_action(self, action):
         self.action = action
@@ -239,32 +245,38 @@ class Craftbot:
         # press rst_macro
         if rst_macro_key is not None:
             self.press(rst_macro_key)
-            delay(100)
+            self.delay(100)
 
         # choose recipe, enter crafting
         self.press('numpad_0')
-        delay(200)
+        self.delay(200)
         self.press('numpad_0')
-        delay(200)
+        self.delay(200)
         self.press('numpad_0')
-        delay(200)
+        self.delay(200)
         self.press('numpad_0')
-        delay(1000)
+        self.delay(1000)
 
         # execute macros
         for macro in macros:
             self.press(macro.key)
-            delay(macro.time * 1000)
+            self.delay(macro.time * 1000)
 
         # collection confirmation
         if is_collection == True:
             self.press('numpad_0')
-            delay(200)
+            self.delay(200)
             self.press('numpad_0')
-            delay(200)
+            self.delay(200)
 
         # delay after crafting is completed
-        delay(3000)
+        self.delay(3000)
+
+    def enable(self):
+        self.enable = True
+
+    def disable(self):
+        self.enable = False
 
 
 def delay(ms, approximity=0.05):
