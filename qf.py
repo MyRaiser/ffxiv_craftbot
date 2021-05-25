@@ -1,6 +1,5 @@
-from ffxiv_craftbot import Macro, Craftbot,delay
-
-
+from craftbot.macro import Macro
+from craftbot.craftbot import Craftbot, delay
 
 ffxiv = Craftbot('最终幻想XIV')
 while True:

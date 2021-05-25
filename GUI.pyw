@@ -1,49 +1,17 @@
-import tkinter as tk
-from ffxiv_craftbot import Macro, Craftbot
-from ffxiv_craftbot import is_admin
+import logging
 import threading
 import json
-import tkinter.messagebox as msgbox
+import ctypes
+import sys
 
-_subprocess_exec_macro = None
-
-
-def exec_macro():
-    # get all content from text.
-    macro1_content = text_macro_content.get('0.0', 'end')
-    macro1_key = var_macro_key.get()
-    macro1 = Macro(macro1_content, macro1_key)
-    is_collection = var_is_collection.get()
-    rst_macro_key = var_rst_macro_key.get()
-    iteration = var_iteration.get()
-    # auto-save macro content
-    with open("macro_autosaved.craftbot", 'w', encoding='utf-8') as f:
-        macro_autosaved = {
-            "macro": macro1.macro,
-            "key": macro1.key,
-            "time": macro1.time,
-            "rst_macro_key": rst_macro_key,
-            "is_collection": is_collection
-        }
-        json.dump(macro_autosaved, f, indent=4, ensure_ascii=False)
-        print("[macro Auto-saved.]")
-
-    if rst_macro_key == '':
-        rst_macro_key = None
-
-    ffxiv = Craftbot('最终幻想XIV')
-    for i in range(iteration):
-        ffxiv.forge(macro1, rst_macro_key=rst_macro_key,
-                    is_collection=is_collection)
-
-
-# Python的多线程\进程真是充满了坑
-# multiprocessing在windows下只能在__main__里跑！
-# threading又没有提供kill方法！！
+import tkinter as tk
+from tkinter import Tk, Button, Entry, Label, Text, StringVar, IntVar, LabelFrame
+from craftbot.macro import Macro
+from craftbot.craftbot import Craftbot
 
 
 def thread_it(func, *args):
-    '''将函数打包进线程'''
+    """将函数打包进线程"""
     # 创建
     t = threading.Thread(target=func, args=args)
     # 守护 !!!
@@ -54,56 +22,115 @@ def thread_it(func, *args):
     # t.join()
 
 
-print("Starting GUI...")
-root = tk.Tk()
-root.title("FFXIV Craft Bot")
-try:
-    root.iconbitmap("ffxiv_craftbot.ico")
-except:
-    print("[fail to set icon.]")
+DEFAULT_SETTINGS = {
+    "macro": "",
+    "key": "",
+    "time": "",
+    "rst_macro_key": "",
+    "is_collection": ""
+}
 
-label_macro_content = tk.Label(root, text="宏时长（或粘贴宏内容自动计算）").pack()
-text_macro_content = tk.Text(root)
-text_macro_content.pack()
+SETTINGS_FILENAME = "app.json"
 
 
-var_macro_key = tk.StringVar()
-label_macro_key = tk.Label(root, text="宏快捷键").pack()
-entry_macro_key = tk.Entry(root, textvariable=var_macro_key).pack()
+class App:
+    def __init__(self):
+        self._craftbot = None
+        self.root = Tk()
+        self.root.title("FFXIV Craft Bot")
+        try:
+            self.root.iconbitmap("ffxiv_craftbot.ico")
+        except Exception as e:
+            logging.error(f"fail to set icon due to {e}")
 
-var_rst_macro_key = tk.StringVar()
-label_rst_macro_key = tk.Label(root, text="重置宏快捷键（默认空）").pack()
-entry_rst_macro_key = tk.Entry(root, textvariable=var_rst_macro_key).pack()
+        self.frame_exec = LabelFrame(self.root, text="执行")
+        self.frame_exec.pack(side=tk.LEFT)
+        self.frame_calc = LabelFrame(self.root, text="计算宏长度")
+        self.frame_calc.pack(side=tk.RIGHT)
+        self.label_macro_content = Label(self.frame_calc, text="宏时长（或粘贴宏内容自动计算）")
+        self.label_macro_content.pack()
+        self.text_macro_content = Text(self.frame_calc)
+        self.text_macro_content.pack()
+        self.button_calc_macro_len = Button(self.frame_calc, text="计算宏长度", command=self.calc_macro_len)
+        self.button_calc_macro_len.pack()
 
-var_iteration = tk.IntVar()
-label_iteration = tk.Label(root, text="执行次数").pack()
-entry_iteration = tk.Entry(root, textvariable=var_iteration).pack()
-var_iteration.set(1)
+        self.var_macro_len = IntVar()
+        self.label_macro_len = Label(self.frame_exec, text="宏时长")
+        self.label_macro_len.pack()
+        self.entry_macro_len = Entry(self.frame_exec, textvariable=self.var_macro_len)
+        self.entry_macro_len.pack()
 
-var_is_collection = tk.BooleanVar()
-checkbutton_is_collection = tk.Checkbutton(
-    root, text="收藏品", variable=var_is_collection, onvalue=True, offvalue=False).pack()
+        self.var_macro_key = StringVar()
+        self.label_macro_key = Label(self.frame_exec, text="宏快捷键")
+        self.label_macro_key.pack()
+        self.entry_macro_key = Entry(self.frame_exec, textvariable=self.var_macro_key)
+        self.entry_macro_key.pack()
 
-button_exec = tk.Button(
-    root, text="执行", command=start_subprocess_exec_macro()).pack()
+        self.var_rst_macro_key = StringVar()
+        self.label_rst_macro_key = Label(self.frame_exec, text="重置宏快捷键（默认空）")
+        self.label_rst_macro_key.pack()
+        self.entry_rst_macro_key = Entry(self.frame_exec, textvariable=self.var_rst_macro_key)
+        self.entry_rst_macro_key.pack()
 
-button_stop = tk.Button(
-    root, text="中止", command=kill_subprocess_exec_macro()).pack()
+        self.var_iteration = IntVar()
+        self.label_iteration = Label(self.frame_exec, text="执行次数")
+        self.label_iteration.pack()
+        self.entry_iteration = Entry(self.frame_exec, textvariable=self.var_iteration)
+        self.entry_iteration.pack()
+        self.var_iteration.set(1)
 
-if not is_admin():
-    msgbox.showinfo(
-        title="Error", message="No Admin permision!\n Craftbot will not run.")
+        self.button_exec = Button(self.frame_exec, text="执行 (F10)", ).pack(side=tk.LEFT)
+        self.root.bind("<F10>", lambda x: print("hello"))
+        self.button_stop = Button(self.frame_exec, text="中止 (F11)", ).pack(side=tk.RIGHT)
 
-# initialize macro last used
-try:
-    with open("macro_autosaved.craftbot", 'r', encoding='utf-8') as f:
-        macro_autosaved = json.load(f)
-        print(macro_autosaved)
-        text_macro_content.insert('end', macro_autosaved["macro"])
-        var_macro_key.set(macro_autosaved["key"])
-        var_rst_macro_key.set(macro_autosaved["rst_macro_key"])
-        var_is_collection.set(macro_autosaved["is_collection"])
-except:
-    print("[failed to open macro_autosaved.craftbot.]")
+        # initialize macro last used
+        try:
+            with open(SETTINGS_FILENAME, 'r', encoding='utf-8') as f:
+                macro_autosaved = json.load(f)
+                logging.info(macro_autosaved)
+                self.text_macro_content.insert('end', macro_autosaved["macro"])
+                self.var_macro_key.set(macro_autosaved["key"])
+                self.var_rst_macro_key.set(macro_autosaved["rst_macro_key"])
+        except Exception as e:
+            logging.error(f"failed to open {SETTINGS_FILENAME} due to {e}")
 
-root.mainloop()
+    def mainloop(self):
+        self.root.mainloop()
+
+    def calc_macro_len(self):
+        macro = self.text_macro_content.get('0.0', 'end')
+
+    def exec_macro(self):
+        # get all content from text.
+        macro1_content = self.text_macro_content.get('0.0', 'end')
+        macro1_key = self.var_macro_key.get()
+        macro1 = Macro(macro1_content, macro1_key)
+        rst_macro_key = self.var_rst_macro_key.get()
+        iteration = self.var_iteration.get()
+        # auto-save macro content
+        with open("macro_autosaved.craftbot", 'w', encoding='utf-8') as f:
+            macro_autosaved = {
+                "macro": macro1.macro,
+                "key": macro1.key,
+                "time": macro1.time,
+                "rst_macro_key": rst_macro_key
+            }
+            json.dump(macro_autosaved, f, indent=4, ensure_ascii=False)
+            logging.info("macro Auto-saved.")
+
+        if rst_macro_key == '':
+            rst_macro_key = None
+
+        self._craftbot = Craftbot('最终幻想XIV')
+        for i in range(iteration):
+            self._craftbot.forge(macro1, rst_macro_key=rst_macro_key)
+
+
+if __name__ == "__main__":
+    DEBUG = True
+    if not DEBUG:
+        if not ctypes.windll.shell32.IsUserAnAdmin():
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+    else:
+        app = App()
+        app.mainloop()

@@ -7,6 +7,9 @@ import cv2
 import BackgroundForge as bf
 from pymouse import PyMouse
 
+import craftbot.craftbot
+
+
 def getScreen():
     return np.array(ImageGrab.grab((0, 0, win32api.GetSystemMetrics(win32con.SM_CXSCREEN), win32api.GetSystemMetrics(win32con.SM_CYSCREEN))))
 
@@ -31,5 +34,5 @@ while(1):
     m.click(click_x,click_y)
 plt.subplot(3,1,2)
 plt.imshow(img)
-bf.delay(1000)
+craftbot.craftbot.delay(1000)
 plt.show()

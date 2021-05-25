@@ -9,7 +9,9 @@ Do crafting automatically, support normal crafting, multiple macros crafting, co
 Start with:
 
 ```py
-from ffxiv_craftbot import Macro, Craftbot
+
+from craftbot.macro import Macro
+from craftbot.craftbot import Craftbot
 ```
 
 ## Usage
@@ -34,9 +36,11 @@ from ffxiv_craftbot import Macro, Craftbot
 ## Sample Code
 
 ```py
-from ffxiv_craftbot import Macro, Craftbot
 
-macro1_content =\
+from craftbot.macro import Macro
+from craftbot.craftbot import Craftbot
+
+macro1_content =
 """
 /ac 闲静 <wait.3>
 /ac 掌握 <wait.2>

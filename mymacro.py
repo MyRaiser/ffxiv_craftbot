@@ -1,4 +1,5 @@
-from ffxiv_craftbot import Macro, Craftbot
+from craftbot.macro import Macro
+from craftbot.craftbot import Craftbot
 
 macro1_content =\
 """

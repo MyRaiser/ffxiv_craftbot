@@ -2,8 +2,7 @@
 自动交巨匠，需要确保屏幕内没别人，并手动确保初始状态
 """
 
-from ffxiv_craftbot import Craftbot, delay
-
+from craftbot.craftbot import Craftbot, delay
 
 ffxiv = Craftbot('最终幻想XIV')
 delay(2000)
