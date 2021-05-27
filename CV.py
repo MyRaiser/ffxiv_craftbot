@@ -8,6 +8,7 @@ import BackgroundForge as bf
 from pymouse import PyMouse
 
 import craftbot.craftbot
+import craftbot.utils
 
 
 def getScreen():
@@ -34,5 +35,5 @@ while(1):
     m.click(click_x,click_y)
 plt.subplot(3,1,2)
 plt.imshow(img)
-craftbot.craftbot.delay(1000)
+craftbot.utils.delay(1000)
 plt.show()
