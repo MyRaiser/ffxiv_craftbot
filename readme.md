@@ -72,7 +72,7 @@ ffxiv.forge(macro1, rst_macro_key='`', is_collection=True)
 ### GUI
 run:
 ```bash
-python GUI.pyw
+python ffxiv_craftbot.pyw
 ```
 
 or you can use Pyinstaller to pack it and run `GUI.exe`

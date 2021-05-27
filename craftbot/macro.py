@@ -16,13 +16,13 @@ class Macro:
         self.time = Macro.get_marco_time(self.macro)
 
     @staticmethod
-    def get_marco_time(macro):
+    def get_marco_time(macro: str) -> int:
         # find all nums and sum.
         # return seconds.
         pattern = "[1-9]"
         result = re.findall(pattern, macro, flags=0)
         t = sum([int(x) for x in result])
-        report("Macro length:", t, "sec")
+        # report("Macro length:", t, "sec")
         return t
 
     def __repr__(self):

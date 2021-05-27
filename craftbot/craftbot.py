@@ -14,7 +14,7 @@ class Craftbot:
     generate a Craftbot object.
     - `window_title`: title of FFXIV window. Typically, do it as:
         ```py
-        ffxiv = Craftbot('æœ€ç»ˆå¹»æƒ³XIV')
+        ffxiv = Craftbot('最终幻想XIV')
         ```
     """
 
@@ -27,38 +27,22 @@ class Craftbot:
     def __init__(self, window_title):
         # get admin
         if is_admin():
-            self.hWnd = Craftbot.get_hwnd(window_title)
-            if self.hWnd == 0:
-                raise ValueError("hWnd is zero!")
+            self.hwnd = Craftbot.get_hwnd(window_title)
+            if self.hwnd == 0:
+                raise ValueError("hwnd is zero!")
                 # self.VK_CODE = VK_CODE
-            self.enable = True
+
         else:
             raise ValueError("No admin permission!")
 
-    def press(self, key, time=5):
-        if self.enable:
-            win32gui.SendMessage(self.hWnd, win32con.WM_KEYDOWN, VK_CODE[key], 0)
-            delay(time)
-            win32gui.SendMessage(self.hWnd, win32con.WM_KEYUP, VK_CODE[key], 0)
-            report(key, "is pressed!")
+    def press(self, key, duration=5):
+        win32gui.SendMessage(self.hwnd, win32con.WM_KEYDOWN, VK_CODE[key], 0)
+        delay(duration)
+        win32gui.SendMessage(self.hwnd, win32con.WM_KEYUP, VK_CODE[key], 0)
+        report(key, "is pressed!")
 
     def delay(self, ms, jitter=0.05):
         delay(ms, jitter)  # call delay() outside class
-
-    def set_action(self, action):
-        self.action = action
-
-    def run(self, loop=0):
-        """
-        Do <loop> times of action.
-        If loop is 0, then do action endlessly.
-        """
-        if loop == 0:
-            while True:
-                self.action(self)
-        else:
-            for i in range(loop):
-                self.action(self)
 
     def forge(self, *macros, rst_macro_key=None, is_collection=False):
         """
@@ -96,12 +80,6 @@ class Craftbot:
 
         # delay after crafting is completed
         self.delay(3000)
-
-    def enable(self):
-        self.enable = True
-
-    def disable(self):
-        self.enable = False
 
 
 VK_CODE = {
@@ -278,12 +256,12 @@ def execute_macro(obj, macroButton, macroLength, delay_sec):
     delay((macroLength + delay_sec) * 1000)
 
 
-def leftClick(x, y, pressTime=50):
+def left_click(x, y, duration=50):
     x = round(x)
     y = round(y)
 
     win32api.SetCursorPos((x, y))
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
-    delay(pressTime)
+    delay(duration)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, x, y, 0, 0)
     report("mouse left clicked at", x, y)
