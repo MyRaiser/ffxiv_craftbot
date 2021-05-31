@@ -1,14 +1,7 @@
 {
-    "macro": """/ac 闲静 <wait.3>
-    /ac 掌握 <wait.2>
-    /ac 改革 <wait.2>
-    /ac 精密制作 <wait.3>
-    /ac 精密制作 <wait.3>
-    /ac 阔步 <wait.2>
-    /ac 比尔格的祝福 <wait.3>
-    /ac 精密制作 <wait.3>""",
+    "macro": "/ac 闲静 <wait.3>\n/ac 掌握 <wait.2>\n/ac 改革 <wait.2>\n/ac 精密制作 <wait.3>\n/ac 精密制作 <wait.3>\n/ac 阔步 <wait.2>\n/ac 比尔格的祝福 <wait.3>\n/ac 精密制作 <wait.3>\n",
     "key": "4",
-    "len": 1,
+    "len": 21,
     "rst_macro_key": "`",
     "iteration": 5
 }

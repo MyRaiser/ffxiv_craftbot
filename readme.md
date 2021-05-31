@@ -23,8 +23,10 @@ from craftbot.craftbot import Craftbot
 - `Craftbot(window_title)`
     generate a Craftbot object.
     - `window_title`: title of FFXIV window. Typically, do it as:
+        
         ```py
-        ffxiv = Craftbot('最终幻想XIV')
+        from craftbot import Craftbot
+        ffxiv = Craftbot("最终幻想XIV")
         ```
 
 - `Craftbot.forge(*macros, rst_macro_key, is_collection)`
@@ -40,17 +42,15 @@ from craftbot.craftbot import Craftbot
 from craftbot.macro import Macro
 from craftbot.craftbot import Craftbot
 
-macro1_content =
-"""
-/ac 闲静 <wait.3>
+macro1_content ="""/ac 闲静 <wait.3>
 /ac 掌握 <wait.2>
 /ac 改革 <wait.2>
 /ac 精密制作 <wait.3>
 /ac 精密制作 <wait.3>
 /ac 阔步 <wait.2>
 /ac 比尔格的祝福 <wait.3>
-/ac 精密制作 <wait.3>
-"""
+/ac 精密制作 <wait.3>"""
+
 macro1 = Macro(macro1_content, '4')
 
 ffxiv = Craftbot('最终幻想XIV')
