@@ -1,5 +1,3 @@
-from .craftbot import Craftbot, report
-
-# unit of macroLength: seconds
+from .craftbot import Craftbot
 
 

@@ -30,7 +30,7 @@ LOGS = "ffxiv_craftbot.log"
 class App:
     def __init__(self):
         self.settings: str = SETTINGS  # 配置文件的路径
-        self._craftbot = None
+        self.__craftbot = None
         self.root = Tk()
         self.root.title("FFXIV Craft Bot")
         try:
@@ -68,7 +68,7 @@ class App:
         self.entry_rst_macro_key.pack()
 
         self.var_iteration = IntVar()
-        self.label_iteration = Label(self.frame_exec, text="执行次数")
+        self.label_iteration = Label(self.frame_exec, text="（剩余）执行次数")
         self.label_iteration.pack()
         self.entry_iteration = Entry(self.frame_exec, textvariable=self.var_iteration)
         self.entry_iteration.pack()
@@ -135,7 +135,7 @@ class App:
         # auto-save macro content
         logging.info(f"start with {args}")
         self.save()
-        self._craftbot = Craftbot('dist')
+        self.__craftbot = Craftbot('dist')
 
         rst_key = self.var_rst_macro_key.get()
         macro_key = self.var_macro_key.get()
@@ -144,23 +144,23 @@ class App:
         while i := self.var_iteration.get() > 0:
             # press reset button
             if rst_key:
-                self._craftbot.press(rst_key)
-                self._craftbot.delay(100)
+                self.__craftbot.press(rst_key)
+                self.__craftbot.delay(100)
 
             # choose recipe, enter crafting
-            self._craftbot.press('numpad_0')
-            self._craftbot.delay(200)
-            self._craftbot.press('numpad_0')
-            self._craftbot.delay(200)
-            self._craftbot.press('numpad_0')
-            self._craftbot.delay(200)
-            self._craftbot.press('numpad_0')
-            self._craftbot.delay(1000)
+            self.__craftbot.press('numpad_0')
+            self.__craftbot.delay(200)
+            self.__craftbot.press('numpad_0')
+            self.__craftbot.delay(200)
+            self.__craftbot.press('numpad_0')
+            self.__craftbot.delay(200)
+            self.__craftbot.press('numpad_0')
+            self.__craftbot.delay(1000)
 
-            self._craftbot.press(macro_key)
-            self._craftbot.delay(macro_len * 1000)
+            self.__craftbot.press(macro_key)
+            self.__craftbot.delay(macro_len * 1000)
 
-            self._craftbot.delay(3000)
+            self.__craftbot.delay(3000)
 
             self.var_iteration.set(i - 1)
 

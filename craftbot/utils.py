@@ -1,5 +1,10 @@
 import ctypes
+import datetime
 import time
+import win32api
+import win32con
+import win32gui
+
 from random import randint
 
 
@@ -165,4 +170,85 @@ VK_CODE = {
     '\\': 0xDC,
     ']': 0xDD,
     "'": 0xDE,
-    '`': 0xC0}
+    }
+
+
+def get_hwnd(name) -> int:
+    """
+    Returns:
+        0 if no window found
+    """
+    hwnd = win32gui.FindWindow(None, name)
+    return hwnd
+
+
+def get_time(fmt='%H:%M:%S.%f') -> str:
+    return datetime.datetime.now().strftime(fmt)
+
+
+def left_click(x, y, duration=50):
+    x = round(x)
+    y = round(y)
+
+    win32api.SetCursorPos((x, y))
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
+    delay(duration)
+    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, x, y, 0, 0)
+
+
+def press_hwnd(hwnd: int, key: str, duration=5, jitter=0.05):
+    """
+    send press to certain window
+    """
+    win32gui.SendMessage(hwnd, win32con.WM_KEYDOWN, VK_CODE[key], 0)
+    delay(duration, jitter)
+    win32gui.SendMessage(hwnd, win32con.WM_KEYUP, VK_CODE[key], 0)
+
+
+def press(key: str, duration=5, jitter=0.05):
+    """
+    simulate a press
+    """
+    win32api.keybd_event(VK_CODE[key], 0, 0, 0)
+    delay(duration, jitter)
+    win32api.keybd_event(VK_CODE[key], 0, win32con.KEYEVENTF_KEYUP, 0)
+
+# def forge(self, *macros, rst_macro_key=None, is_collection=False):
+#     """
+#     do crafting(once).
+#     - `macros`: macros to execute.
+#     - `rst_macro_key`: Key of rst_macro. Make a macro in FFXIV to interrupt all macros.
+#       This can improve stability. Default None.
+#     - `is_collection`: whether to do the additional collection confirmation step. Default False.
+#     """
+#     # press rst_macro
+#     if rst_macro_key is not None:
+#         self.press(rst_macro_key)
+#         self.delay(100)
+#
+#     # choose recipe, enter crafting
+#     self.press('numpad_0')
+#     self.delay(200)
+#     self.press('numpad_0')
+#     self.delay(200)
+#     self.press('numpad_0')
+#     self.delay(200)
+#     self.press('numpad_0')
+#     self.delay(1000)
+#
+#     # execute macros
+#     for macro in macros:
+#         self.press(macro.key)
+#         self.delay(macro.time * 1000)
+#
+#     # collection confirmation
+#     if is_collection:
+#         self.press('numpad_0')
+#         self.delay(200)
+#         self.press('numpad_0')
+#         self.delay(200)
+#
+#     # delay after crafting is completed
+#     self.delay(3000)
+
+

@@ -1,104 +1,62 @@
-import datetime
+import threading
+import logging
+from typing import Callable, Any
+from collections import deque
+from functools import partial
 
-import win32api
-import win32con
-import win32gui
-
-from craftbot.utils import is_admin, delay, VK_CODE
+from .utils import is_admin, delay, get_hwnd, press, press_hwnd
 
 
-class Craftbot:
+class Craftbot(threading.Thread):
     """
-    generate a Craftbot object.
-    - `window_title`: title of FFXIV window. Typically, do it as:
-        ```py
-        ffxiv = Craftbot('最终幻想XIV')
-        ```
+    Async script executor
     """
-
-    @staticmethod
-    def get_hwnd(name):
-        hwnd = win32gui.FindWindow(None, name)
-        report("hwnd is:", hwnd)
-        return hwnd
-
-    def __init__(self, window_title):
-        # get admin
-        if is_admin():
-            self.hwnd = Craftbot.get_hwnd(window_title)
+    def __init__(self, window_title: str, *, debug: bool = False):
+        # admin permission is needed
+        if debug or is_admin():
+            self.hwnd = get_hwnd(window_title)
             if self.hwnd == 0:
                 raise ValueError("hwnd is zero!")
-                # self.VK_CODE = VK_CODE
-
         else:
             raise ValueError("No admin permission!")
+        super().__init__()
+        self.__running = threading.Event()
+        self.__running.set()
+        self.__deque = deque()
 
-    def press(self, key, duration=5):
-        win32gui.SendMessage(self.hwnd, win32con.WM_KEYDOWN, VK_CODE[key], 0)
-        delay(duration)
-        win32gui.SendMessage(self.hwnd, win32con.WM_KEYUP, VK_CODE[key], 0)
-        report(key, "is pressed!")
+    def stop(self):
+        self.__running.clear()
 
-    def delay(self, ms, jitter=0.05):
-        delay(ms, jitter)  # call delay() outside class
+    @property
+    def is_running(self):
+        return self.__running.isSet()
 
-    def forge(self, *macros, rst_macro_key=None, is_collection=False):
+    def do(self, action: Callable[[], Any]):
         """
-        do crafting(once).
-        - `macros`: macros to execute.
-        - `rst_macro_key`: Key of rst_macro. Make a macro in FFXIV to interrupt all macros. This can improve stability. Default None.
-        - `is_collection`: whether to do the additional collection confirmation step. Default False.
+        prepare to do action, push into action queue
         """
-        # press rst_macro
-        if rst_macro_key is not None:
-            self.press(rst_macro_key)
-            self.delay(100)
+        self.__deque.append(action)
 
-        # choose recipe, enter crafting
-        self.press('numpad_0')
-        self.delay(200)
-        self.press('numpad_0')
-        self.delay(200)
-        self.press('numpad_0')
-        self.delay(200)
-        self.press('numpad_0')
-        self.delay(1000)
+    def press(self, key):
+        self.do(partial(press, key))
 
-        # execute macros
-        for macro in macros:
-            self.press(macro.key)
-            self.delay(macro.time * 1000)
+    def delay(self, ms):
+        self.do(partial(delay, ms))
 
-        # collection confirmation
-        if is_collection:
-            self.press('numpad_0')
-            self.delay(200)
-            self.press('numpad_0')
-            self.delay(200)
+    def press_hwnd(self, key):
+        self.do(partial(press_hwnd, self.hwnd, key))
 
-        # delay after crafting is completed
-        self.delay(3000)
+    def execute(self):
+        """
+        get a action from deque and execute it
+        """
+        try:
+            action = self.__deque.popleft()
+            logging.info(f"got action: {action}")
+            action()
+        except IndexError:
+            pass
 
-
-def present_time():
-    return datetime.datetime.now().strftime('%H:%M:%S.%f')
-
-
-def report(*x):
-    print("[", present_time(), "]", *x)
-
-
-def execute_macro(obj, macroButton, macroLength, delay_sec):
-    obj.press(macroButton)
-    delay((macroLength + delay_sec) * 1000)
-
-
-def left_click(x, y, duration=50):
-    x = round(x)
-    y = round(y)
-
-    win32api.SetCursorPos((x, y))
-    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN, x, y, 0, 0)
-    delay(duration)
-    win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP, x, y, 0, 0)
-    report("mouse left clicked at", x, y)
+    def run(self):
+        while self.is_running:
+            self.execute()
