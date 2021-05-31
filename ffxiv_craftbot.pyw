@@ -138,7 +138,7 @@ class App:
         self.save()
         if self.__craftbot:
             self.__craftbot.stop()
-        self.__craftbot = Craftbot("")
+        self.__craftbot = Craftbot("最终幻想XIV")
         self.__craftbot.start()
 
         rst_key = self.var_rst_macro_key.get()
@@ -174,7 +174,36 @@ class App:
                     if c.is_idle:
                         break
 
-        t = threading.Thread(target=worker, args=(self.__craftbot, self.var_iteration))
+        def worker_hwnd(c: Craftbot, v: IntVar):
+            time.sleep(2)
+            while ((i := v.get()) > 0) and c:
+                # press reset button
+                if rst_key:
+                    c.press_hwnd(rst_key)
+                    c.delay(100)
+
+                # choose recipe, enter crafting
+                c.press_hwnd('numpad_0')
+                c.delay(200)
+                c.press_hwnd('numpad_0')
+                c.delay(200)
+                c.press_hwnd('numpad_0')
+                c.delay(200)
+                c.press_hwnd('numpad_0')
+                c.delay(1000)
+
+                c.press_hwnd(macro_key)
+                c.delay(macro_len * 1000)
+
+                c.delay(3000)
+
+                v.set(i - 1)
+
+                while True:
+                    if c.is_idle:
+                        break
+
+        t = threading.Thread(target=worker_hwnd, args=(self.__craftbot, self.var_iteration))
         t.setDaemon(True)
         t.start()
 
