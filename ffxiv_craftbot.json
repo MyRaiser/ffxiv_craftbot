@@ -1,7 +1,14 @@
 {
-    "macro": "9\n",
+    "macro": """/ac 闲静 <wait.3>
+    /ac 掌握 <wait.2>
+    /ac 改革 <wait.2>
+    /ac 精密制作 <wait.3>
+    /ac 精密制作 <wait.3>
+    /ac 阔步 <wait.2>
+    /ac 比尔格的祝福 <wait.3>
+    /ac 精密制作 <wait.3>""",
     "key": "4",
-    "len": 9,
+    "len": 1,
     "rst_macro_key": "`",
-    "iteration": 3
+    "iteration": 5
 }

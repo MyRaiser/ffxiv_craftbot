@@ -12,6 +12,11 @@ class Craftbot(threading.Thread):
     Async script executor
     """
     def __init__(self, window_title: str, *, debug: bool = False):
+        """
+        Args:
+            window_title: title of window
+            debug: if True, admin permission will not be checked
+        """
         # admin permission is needed
         if debug or is_admin():
             self.hwnd = get_hwnd(window_title)
@@ -22,6 +27,8 @@ class Craftbot(threading.Thread):
         super().__init__()
         self.__running = threading.Event()
         self.__running.set()
+        self.__idle = threading.Event()
+        self.__idle.set()
         self.__deque = deque()
 
     def stop(self):
@@ -31,10 +38,15 @@ class Craftbot(threading.Thread):
     def is_running(self):
         return self.__running.isSet()
 
+    @property
+    def is_idle(self):
+        return self.__idle.isSet()
+
     def do(self, action: Callable[[], Any]):
         """
         prepare to do action, push into action queue
         """
+        self.__idle.clear()
         self.__deque.append(action)
 
     def press(self, key):
@@ -52,8 +64,10 @@ class Craftbot(threading.Thread):
         """
         try:
             action = self.__deque.popleft()
-            logging.info(f"got action: {action}")
+            print(f"Got action: {action}")
             action()
+            if len(self.__deque) == 0:
+                self.__idle.set()
         except IndexError:
             pass
 

@@ -7,10 +7,11 @@ import threading
 import json
 import ctypes
 import sys
+import time
 
 import tkinter as tk
 from tkinter import Tk, Button, Entry, Label, Text, StringVar, IntVar, LabelFrame
-from craftbot.macro import Macro
+from craftbot.macro import get_marco_time
 from craftbot.craftbot import Craftbot
 
 
@@ -38,7 +39,7 @@ class App:
         except Exception as e:
             logging.error(f"fail to set icon due to {e}")
 
-        self.frame_exec = LabelFrame(self.root, text="执行")
+        self.frame_exec = LabelFrame(self.root, text="单宏循环执行")
         self.frame_exec.pack(side=tk.LEFT)
         self.frame_calc = LabelFrame(self.root, text="计算宏时长")
         self.frame_calc.pack(side=tk.RIGHT)
@@ -74,9 +75,9 @@ class App:
         self.entry_iteration.pack()
         self.var_iteration.set(1)
 
-        self.button_exec = Button(self.frame_exec, text="执行 (F10)", command=self.start)
+        self.button_exec = Button(self.frame_exec, text="执行 (2秒后)", command=self.start)
         self.button_exec.pack(side=tk.LEFT)
-        self.button_stop = Button(self.frame_exec, text="中止 (F11)", command=self.stop)
+        self.button_stop = Button(self.frame_exec, text="中止", command=self.stop)
         self.button_stop.pack(side=tk.RIGHT)
         self.root.bind("<F10>", self.start)
         self.root.bind("<F11>", self.stop)
@@ -88,7 +89,7 @@ class App:
 
     def get_macro_len(self):
         macro = self.text_macro_content.get('0.0', 'end')
-        t = Macro.get_marco_time(macro)
+        t = get_marco_time(macro)
         logging.info(f"Macro length: {t}")
         self.var_macro_len.set(t)
         self.save()
@@ -135,37 +136,53 @@ class App:
         # auto-save macro content
         logging.info(f"start with {args}")
         self.save()
-        self.__craftbot = Craftbot('dist')
+        if self.__craftbot:
+            self.__craftbot.stop()
+        self.__craftbot = Craftbot("")
+        self.__craftbot.start()
 
         rst_key = self.var_rst_macro_key.get()
         macro_key = self.var_macro_key.get()
         macro_len = self.var_macro_len.get()
 
-        while i := self.var_iteration.get() > 0:
-            # press reset button
-            if rst_key:
-                self.__craftbot.press(rst_key)
-                self.__craftbot.delay(100)
+        def worker(c: Craftbot, v: IntVar):
+            time.sleep(2)
+            while ((i := v.get()) > 0) and c:
+                # press reset button
+                if rst_key:
+                    c.press(rst_key)
+                    c.delay(100)
 
-            # choose recipe, enter crafting
-            self.__craftbot.press('numpad_0')
-            self.__craftbot.delay(200)
-            self.__craftbot.press('numpad_0')
-            self.__craftbot.delay(200)
-            self.__craftbot.press('numpad_0')
-            self.__craftbot.delay(200)
-            self.__craftbot.press('numpad_0')
-            self.__craftbot.delay(1000)
+                # choose recipe, enter crafting
+                c.press('numpad_0')
+                c.delay(200)
+                c.press('numpad_0')
+                c.delay(200)
+                c.press('numpad_0')
+                c.delay(200)
+                c.press('numpad_0')
+                c.delay(1000)
 
-            self.__craftbot.press(macro_key)
-            self.__craftbot.delay(macro_len * 1000)
+                c.press(macro_key)
+                c.delay(macro_len * 1000)
 
-            self.__craftbot.delay(3000)
+                c.delay(3000)
 
-            self.var_iteration.set(i - 1)
+                v.set(i - 1)
+
+                while True:
+                    if c.is_idle:
+                        break
+
+        t = threading.Thread(target=worker, args=(self.__craftbot, self.var_iteration))
+        t.setDaemon(True)
+        t.start()
 
     def stop(self, *args):
-        pass
+        logging.info(f"stop with {args}")
+        if self.__craftbot:
+            self.__craftbot.stop()
+            self.__craftbot = None
 
 
 if __name__ == "__main__":
