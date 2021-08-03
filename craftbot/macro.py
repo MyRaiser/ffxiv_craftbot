@@ -2,11 +2,10 @@ import re
 
 
 def get_marco_time(macro: str) -> int:
-    # find all nums and sum.
-    # return seconds.
+    """find all nums and sum. return seconds."""
     pattern = "[1-9]"
     result = re.findall(pattern, macro, flags=0)
-    t = sum([int(x) for x in result])
+    t = sum((int(x) for x in result))
     # report("Macro length:", t, "sec")
     return t
 
@@ -14,8 +13,8 @@ def get_marco_time(macro: str) -> int:
 class Macro:
     """
     generate a macro object used in `Craftbot.forge()`. Time will be calculated automatically.
-    - `macro`: macro content text.
-    - `key`: macro shortcut key.
+    :param macro: macro content text.
+    :param key: macro shortcut key.
     """
 
     def __init__(self, macro, key):

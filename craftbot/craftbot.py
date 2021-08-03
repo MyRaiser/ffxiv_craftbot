@@ -1,5 +1,6 @@
 import threading
 import logging
+from numbers import Number
 from typing import Callable, Any
 from collections import deque
 from functools import partial
@@ -13,9 +14,8 @@ class Craftbot(threading.Thread):
     """
     def __init__(self, window_title: str, *, debug: bool = False):
         """
-        Args:
-            window_title: title of window
-            debug: if True, admin permission will not be checked
+        :param window_title: title of window
+        :param debug: if True, admin permission will not be checked
         """
         # admin permission is needed
         if debug or is_admin():
@@ -49,13 +49,13 @@ class Craftbot(threading.Thread):
         self.__idle.clear()
         self.__deque.append(action)
 
-    def press(self, key):
+    def press(self, key: str):
         self.do(partial(press, key))
 
-    def delay(self, ms):
+    def delay(self, ms: Number):
         self.do(partial(delay, ms))
 
-    def press_hwnd(self, key):
+    def press_hwnd(self, key: str):
         self.do(partial(press_hwnd, self.hwnd, key))
 
     def execute(self):

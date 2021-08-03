@@ -5,8 +5,10 @@
 from craftbot import Craftbot
 from craftbot.utils import delay
 
+delay(2000)  # wait to switch window
+
 ffxiv = Craftbot('最终幻想XIV')
-delay(2000)
+ffxiv.start()
 while True:
     # select npc 1
     ffxiv.press('numpad_4')

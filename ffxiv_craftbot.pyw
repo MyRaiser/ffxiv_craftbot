@@ -12,7 +12,7 @@ import time
 import tkinter as tk
 from tkinter import Tk, Button, Entry, Label, Text, StringVar, IntVar, LabelFrame
 from craftbot.macro import get_marco_time
-from craftbot.craftbot import Craftbot
+from craftbot import Craftbot
 
 
 DEFAULT_SETTINGS = {
